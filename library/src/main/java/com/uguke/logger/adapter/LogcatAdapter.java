@@ -9,11 +9,11 @@ import com.uguke.logger.strategy.FormatStrategy;
 public class LogcatAdapter extends LogAdapter {
 
     public LogcatAdapter() {
-        super(LogcatStrategy.newBuilder().build());
+        super(new LogcatStrategy.Builder().build());
     }
 
-    public LogcatAdapter(FormatStrategy config) {
-        super(config);
+    public LogcatAdapter(FormatStrategy strategy) {
+        super(strategy);
     }
 
     @Override
