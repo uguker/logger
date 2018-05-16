@@ -89,9 +89,11 @@ public class PrinterImpl implements SimplePrinter, MultiPrinter {
                 continue;
             }
             // 获取顶部边框
-            String topBorder = table.getTopBorder(strategy.getMaxLength());
+            String topBorder = table.getTopBorder(strategy.getMaxLength(),
+                    strategy.isEqualLength());
             // 获取底部边框
-            String bottomBorder = table.getBottomBorder(strategy.getMaxLength());
+            String bottomBorder = table.getBottomBorder(strategy.getMaxLength(),
+                    strategy.isEqualLength());
             // 获取Object内容
             if (msg == Language.EN.getJson()) {
                 msg = strategy.getLanguage().getJson();
@@ -292,7 +294,8 @@ public class PrinterImpl implements SimplePrinter, MultiPrinter {
         // 方法数
         int methodCount =  currentCount.get() == null ? strategy.getMethodCount() : currentCount.get();
         // 获取内容分割线
-        String divider = table.getContentDivider(strategy.getMaxLength());
+        String divider = table.getContentDivider(strategy.getMaxLength(),
+                strategy.isEqualLength());
         // 获取当前该线程的堆栈转储堆栈跟踪元素的数组
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         //是否显示线程信息
@@ -391,7 +394,8 @@ public class PrinterImpl implements SimplePrinter, MultiPrinter {
         // 日志等级
         Level level = currentLevel.get();
         // 获取内容分割线
-        String divider = table.getContentDivider(strategy.getMaxLength());
+        String divider = table.getContentDivider(strategy.getMaxLength(),
+                strategy.isEqualLength());
 
         String exception = null;
         try {

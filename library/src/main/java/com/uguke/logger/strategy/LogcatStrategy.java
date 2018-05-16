@@ -10,11 +10,7 @@ public class LogcatStrategy extends FormatStrategy {
 
     private LogcatStrategy() {
         super();
-    }
-
-    @NonNull
-    public static Builder newBuilder() {
-        return new Builder();
+        equalLength = false;
     }
 
     public static class Builder {
@@ -28,7 +24,7 @@ public class LogcatStrategy extends FormatStrategy {
         private Level level;
         private Language language;
 
-        private Builder() {
+        public Builder() {
             showThread = true;
             maxLength = 40;
             methodCount = 3;

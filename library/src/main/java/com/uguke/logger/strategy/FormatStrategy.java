@@ -9,6 +9,9 @@ import com.uguke.logger.constant.Table;
  */
 public class FormatStrategy {
 
+    // 表格实际长度是否和文字相等
+    boolean equalLength;
+
     private boolean showThread;
     private int maxLength;
     private int methodCount;
@@ -19,6 +22,7 @@ public class FormatStrategy {
     private Language language;
 
     FormatStrategy() {
+        equalLength = true;
         showThread = true;
         maxLength = 40;
         methodCount = 3;
@@ -27,6 +31,15 @@ public class FormatStrategy {
         table = Table.DOUBLE;
         level = Level.VERBOSE;
         language = Language.CN;
+    }
+
+    public boolean isEqualLength() {
+        return equalLength;
+    }
+
+    public FormatStrategy setEqualLength(boolean equalLength) {
+        this.equalLength = equalLength;
+        return this;
     }
 
     public boolean isShowThread() {
@@ -91,6 +104,82 @@ public class FormatStrategy {
 
     public void setLanguage(Language language) {
         this.language = language;
+    }
+
+    public static class Builder {
+
+        private boolean showThread;
+        private int maxLength;
+        private int methodCount;
+        private int methodOffset;
+        private String tag;
+        private Table table;
+        private Level level;
+        private Language language;
+
+        public Builder() {
+            showThread = true;
+            maxLength = 40;
+            methodCount = 3;
+            methodOffset = 3;
+            tag = "Android";
+            table = Table.DOUBLE;
+            level = Level.VERBOSE;
+            language = Language.CN;
+        }
+
+        public Builder showThread(boolean show) {
+            this.showThread = show;
+            return this;
+        }
+
+        public Builder maxLength (int length) {
+            this.maxLength = length;
+            return this;
+        }
+
+        public Builder methodCount (int count) {
+            this.methodCount = count;
+            return this;
+        }
+
+        public Builder methodOffset (int offset) {
+            this.methodOffset = offset;
+            return this;
+        }
+
+        public Builder tag (String tag) {
+            this.tag = tag;
+            return this;
+        }
+
+        public Builder table(Table table) {
+            this.table = table;
+            return this;
+        }
+
+        public Builder level(Level level) {
+            this.level = level;
+            return this;
+        }
+
+        public Builder language(Language language) {
+            this.language = language;
+            return this;
+        }
+
+        public FormatStrategy build() {
+            FormatStrategy strategy = new FormatStrategy();
+            strategy.setShowThread(showThread);
+            strategy.setMaxLength(maxLength);
+            strategy.setMethodCount(methodCount);
+            strategy.setMethodOffset(methodOffset);
+            strategy.setTag(tag);
+            strategy.setTable(table);
+            strategy.setLevel(level);
+            strategy.setLanguage(language);
+            return strategy;
+        }
     }
 
 }

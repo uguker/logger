@@ -2,8 +2,8 @@ package com.uguke.logger.constant;
 
 public class Table {
 
-    public static final Table DOUBLE = new Table("╔", "╗", "╚", "╝", "╠", "╣", "═", "║", "═", "\u3000\u3000");
-    public static final Table SINGLE = new Table("┌", "┐", "└", "┘", "├", "┤", "─", "│", "─", "\u3000\u3000");
+    public static final Table DOUBLE = new Table("╔", "╗", "╚", "╝", "╠", "╣", "═", "║", "═", "\u3000\u3000", 1.7f);
+    public static final Table SINGLE = new Table("┌", "┐", "└", "┘", "├", "┤", "─", "│", "─", "\u3000\u3000", 1.7f);
 
     private String topLeft;
     private String topRight;
@@ -15,6 +15,7 @@ public class Table {
     private String borderVertical;
     private String borderHorizontal;
     private String indent;
+    private float ratio;
 
     private StringBuilder builder;
 
@@ -22,7 +23,7 @@ public class Table {
                  String bottomLeft, String bottomRight,
                  String dividerLeft, String dividerRight,
                  String dividerMiddle, String borderVertical,
-                 String borderHorizontal, String indent) {
+                 String borderHorizontal, String indent, float ratio) {
         this.topLeft = topLeft;
         this.topRight = topRight;
         this.bottomLeft = bottomLeft;
@@ -33,6 +34,7 @@ public class Table {
         this.borderVertical = borderVertical;
         this.borderHorizontal = borderHorizontal;
         this.indent = indent;
+        this.ratio = ratio;
         this.builder = new StringBuilder();
     }
 
@@ -124,24 +126,35 @@ public class Table {
         this.indent = indent;
     }
 
-    public String getTopBorder(int length) {
+    public float getRatio() {
+        return ratio;
+    }
+
+    public void setRatio(float ratio) {
+        this.ratio = ratio;
+    }
+
+    public String getTopBorder(int length, boolean equalLength) {
         builder.setLength(0);
+        length = equalLength ? length : (int) (length * ratio);
         for (int i = 0; i < length; i++) {
             builder.append(borderHorizontal);
         }
         return topLeft + builder.toString() + topRight;
     }
 
-    public String getBottomBorder(int length) {
+    public String getBottomBorder(int length, boolean equalLength) {
         builder.setLength(0);
+        length = equalLength ? length : (int) (length * ratio);
         for (int i = 0; i < length; i++) {
             builder.append(borderHorizontal);
         }
         return bottomLeft + builder.toString() + bottomRight;
     }
 
-    public String getContentDivider(int length) {
+    public String getContentDivider(int length, boolean equalLength) {
         builder.setLength(0);
+        length = equalLength ? length : (int) (length * ratio);
         for (int i = 0; i < length; i++) {
             builder.append(borderHorizontal);
         }

@@ -14,7 +14,7 @@ allprojects {
 2. 添加依赖关系
 ```
 dependencies {
-	compile 'com.github.uguker:logger:1.2.1'
+	compile 'com.github.uguker:logger:1.2.4'
 }
 ```
 ## 简单使用
@@ -40,7 +40,7 @@ Logger.t("测试2", 2).e("这是一个简单的日志"); //2表示方法层数�
 <img src="https://github.com/uguker/logger/blob/master/screenshot/loge_4.png" height="180"><br>
 ## 配置
 ```
-FormatStrategy strategy = LogcatStrategy.newBuilder()
+FormatStrategy strategy = new LogcatStrategy.Builder()
                 .showThread(false)      // 是否显示线程信息
                 .maxLength(60)          // 每行日志可显示的最大长度
                 .methodCount(2)         // 方法层数

@@ -11,7 +11,9 @@ public class DiskStrategy extends FormatStrategy {
 
     private DiskStrategy() {
         super();
+        equalLength = true;
     }
+
 
     public String getSaveDir() {
         return saveDir;
@@ -29,10 +31,6 @@ public class DiskStrategy extends FormatStrategy {
         this.saveName = saveName;
     }
 
-    public static DiskStrategy.Builder newBuilder() {
-        return new DiskStrategy.Builder();
-    }
-
     public static class Builder {
 
         private boolean showThread;
@@ -46,7 +44,7 @@ public class DiskStrategy extends FormatStrategy {
         private Level level;
         private Language language;
 
-        private Builder() {
+        public Builder() {
             showThread = true;
             maxLength = 40;
             methodCount = 3;

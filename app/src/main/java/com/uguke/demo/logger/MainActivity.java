@@ -8,6 +8,7 @@ import com.uguke.logger.adapter.LogcatAdapter;
 import com.uguke.logger.constant.Language;
 import com.uguke.logger.constant.Level;
 import com.uguke.logger.constant.Table;
+import com.uguke.logger.strategy.DiskStrategy;
 import com.uguke.logger.strategy.LogcatStrategy;
 import com.uguke.logger.strategy.FormatStrategy;
 
@@ -46,7 +47,10 @@ public class MainActivity extends AppCompatActivity {
 //        Logger.t("当前TAG").e("配置之后");
 //        Logger.t("当前TAG").e("配置之后%d", 10);
 
-        FormatStrategy strategy = LogcatStrategy.newBuilder()
+        //FormatStrategy strategy = DiskStrategy.newInstance();
+
+
+        FormatStrategy strategy = new LogcatStrategy.Builder()
                 //.showThread(false)
                 .maxLength(40)
                 .methodCount(2)
@@ -56,6 +60,12 @@ public class MainActivity extends AppCompatActivity {
                 .table(Table.DOUBLE)
                 .tag("你好")
                 .build();
+
+
+
+
+
+
         //PrinterImp p = new PrinterImp(new AndroidAdapter(config));
         Logger.addLogAdapter(new LogcatAdapter(strategy));
         new Thread(new Runnable() {
