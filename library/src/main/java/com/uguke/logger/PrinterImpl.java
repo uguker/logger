@@ -4,6 +4,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.util.LongSparseArray;
 import android.support.v4.util.SparseArrayCompat;
+
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;

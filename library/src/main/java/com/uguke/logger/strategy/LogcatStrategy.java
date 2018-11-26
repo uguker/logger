@@ -1,11 +1,14 @@
 package com.uguke.logger.strategy;
 
-
-
 import com.uguke.logger.constant.Language;
 import com.uguke.logger.constant.Level;
 import com.uguke.logger.constant.Table;
 
+/**
+ * 功能描述：Logcat日志打印
+ * @author LeiJue
+ * @date 2018/11/14
+ */
 public class LogcatStrategy extends FormatStrategy {
 
     private LogcatStrategy() {

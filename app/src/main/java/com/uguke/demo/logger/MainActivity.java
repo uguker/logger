@@ -1,5 +1,6 @@
 package com.uguke.demo.logger;
 
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -12,6 +13,7 @@ import com.uguke.logger.strategy.DiskStrategy;
 import com.uguke.logger.strategy.LogcatStrategy;
 import com.uguke.logger.strategy.FormatStrategy;
 
+import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -76,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
 
+        Logger.e(Environment.getExternalStorageDirectory().getPath());
 //        Map map = new HashMap();
 //        map.put(null,0);
 //        map.put(0,null);
@@ -105,5 +108,14 @@ public class MainActivity extends AppCompatActivity {
 //
 //        boolean [] aa = new boolean[]{true,true,true};
 //        Logger.e(aa);
-   }
+
+
+        ///storage/emulated/0
+
+        try {
+            Runtime.getRuntime().exec("adb pull /storage/emulated/0/360 ~/Desktop/");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -3,6 +3,11 @@ package com.uguke.logger;
 import com.uguke.logger.adapter.LogAdapter;
 import com.uguke.logger.constant.Level;
 
+/**
+ * 功能描述：日志打印
+ * @author LeiJue
+ * @date 2018/11/14
+ */
 public final class Logger {
 
     private Logger() {
@@ -11,7 +16,6 @@ public final class Logger {
 
     private static class Holder {
         static final MultiPrinter instance = PrinterImpl.getInstance();
-
     }
 
     public static void addLogAdapter(LogAdapter adapter) {
