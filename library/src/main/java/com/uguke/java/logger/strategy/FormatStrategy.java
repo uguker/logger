@@ -1,15 +1,16 @@
-package com.uguke.logger.strategy;
+package com.uguke.java.logger.strategy;
 
-import com.uguke.logger.constant.Language;
-import com.uguke.logger.constant.Level;
-import com.uguke.logger.constant.Table;
+import com.uguke.java.logger.Language;
+import com.uguke.java.logger.Level;
+import com.uguke.java.logger.Table;
 
 /**
  * 功能描述：格式化配置
+ * @author Admin
+ * @date 2018/12/18
  */
 public class FormatStrategy {
 
-    // 表格实际长度是否和文字相等
     boolean equalLength;
 
     private boolean showThread;
@@ -24,7 +25,7 @@ public class FormatStrategy {
     FormatStrategy() {
         equalLength = true;
         showThread = true;
-        maxLength = 40;
+        maxLength = 60;
         methodCount = 3;
         methodOffset = 3;
         tag = "Android";

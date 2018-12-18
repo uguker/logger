@@ -1,19 +1,15 @@
 package com.uguke.demo.logger;
 
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.uguke.logger.Logger;
-import com.uguke.logger.adapter.LogcatAdapter;
-import com.uguke.logger.constant.Language;
-import com.uguke.logger.constant.Level;
-import com.uguke.logger.constant.Table;
-import com.uguke.logger.strategy.DiskStrategy;
-import com.uguke.logger.strategy.LogcatStrategy;
-import com.uguke.logger.strategy.FormatStrategy;
 
-import java.io.IOException;
+import com.uguke.java.logger.Logger;
+import com.uguke.java.logger.adapter.LogcatAdapter;
+import com.uguke.java.logger.Language;
+import com.uguke.java.logger.Level;
+import com.uguke.java.logger.Table;
+import com.uguke.java.logger.strategy.FormatStrategy;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -52,9 +48,9 @@ public class MainActivity extends AppCompatActivity {
         //FormatStrategy strategy = DiskStrategy.newInstance();
 
 
-        FormatStrategy strategy = new LogcatStrategy.Builder()
+        FormatStrategy strategy = new FormatStrategy.Builder()
                 //.showThread(false)
-                .maxLength(40)
+                .maxLength(10)
                 .methodCount(2)
                 .methodOffset(1)
                 .level(Level.VERBOSE)
@@ -70,15 +66,17 @@ public class MainActivity extends AppCompatActivity {
 
         //PrinterImp p = new PrinterImp(new AndroidAdapter(config));
         Logger.addLogAdapter(new LogcatAdapter(strategy));
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Logger.e( "你是傻逼\n你是傻逼\n你是傻你是傻逼你你你是傻逼你是傻逼你是傻逼你是傻逼你是傻逼你是傻逼是傻逼你是傻逼你是傻逼你是傻逼是傻逼你是傻逼你是傻逼逼\n你是傻逼\n你是傻逼\n你是傻逼\n%s", "SS");
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                Logger.e( "你是傻逼\n你是傻逼\n你是傻你是傻逼你你你是傻逼你是傻逼你是傻逼你是傻逼你是傻逼你是傻逼是傻逼你是傻逼你是傻逼你是傻逼是傻逼你是傻逼你是傻逼逼\n你是傻逼\n你是傻逼\n你是傻逼\n%s", "SS");
+//
+//            }
+//        }).start();
+        Logger.e("你是啊你是啊你是啊你是啊");
 
-            }
-        }).start();
 
-        Logger.e(Environment.getExternalStorageDirectory().getPath());
+        //Logger.e(Environment.getExternalStorageDirectory().getPath());
 //        Map map = new HashMap();
 //        map.put(null,0);
 //        map.put(0,null);
@@ -110,12 +108,5 @@ public class MainActivity extends AppCompatActivity {
 //        Logger.e(aa);
 
 
-        ///storage/emulated/0
-
-        try {
-            Runtime.getRuntime().exec("adb pull /storage/emulated/0/360 ~/Desktop/");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

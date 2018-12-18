@@ -1,4 +1,4 @@
-package com.uguke.logger.constant;
+package com.uguke.java.logger;
 
 /**
  * 功能描述：日志等级
@@ -12,8 +12,7 @@ public enum Level {
     INFO(2),
     WARN(3),
     ERROR(4),
-    ASSERT(5),
-    NONE(6);
+    NONE(5);
 
     int code;
 

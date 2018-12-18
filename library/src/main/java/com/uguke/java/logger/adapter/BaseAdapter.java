@@ -1,18 +1,17 @@
-package com.uguke.logger.adapter;
+package com.uguke.java.logger.adapter;
 
-import com.uguke.logger.constant.Level;
-import com.uguke.logger.strategy.FormatStrategy;
+import com.uguke.java.logger.Level;
+import com.uguke.java.logger.strategy.FormatStrategy;
 
 /**
- * 功能描述：数据日志适配器
+ * 数据日志适配器
  * @author LeiJue
- * @date 2018/11/14
  */
-public abstract class LogAdapter {
+public abstract class BaseAdapter {
 
     protected FormatStrategy strategy;
 
-    public LogAdapter(FormatStrategy strategy) {
+    public BaseAdapter(FormatStrategy strategy) {
         this.strategy = strategy;
     }
 
@@ -25,7 +24,7 @@ public abstract class LogAdapter {
     }
 
     /**
-     * 功能描述：日志打印
+     * 功能描述：日志输出
      * @param level 日志等级
      * @param tag   标签
      * @param msg   消息
