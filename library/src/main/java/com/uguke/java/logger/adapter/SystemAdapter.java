@@ -1,6 +1,5 @@
 package com.uguke.java.logger.adapter;
 
-import com.uguke.java.logger.Level;
 import com.uguke.java.logger.strategy.FormatStrategy;
 
 /**
@@ -9,17 +8,17 @@ import com.uguke.java.logger.strategy.FormatStrategy;
  */
 public class SystemAdapter extends BaseAdapter {
 
-    private static final String [] METHOD_NAMES = {"V", "D", "I", "W", "E", "E"};
+    private static final String [] METHOD_NAMES = {"D", "I", "W", "E"};
 
     public SystemAdapter(FormatStrategy strategy) {
         super(strategy);
     }
 
     @Override
-    public void log(Level level, String tag, String msg) {
-        if (level == Level.NONE) {
+    public void log(int level, String tag, String msg) {
+        if (level == -1) {
             return;
         }
-        System.out.println(METHOD_NAMES[level.getCode()] + "/" + tag + ":" + msg);
+        System.out.println(METHOD_NAMES[level] + "/" + tag + ":" + msg);
     }
 }

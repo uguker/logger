@@ -6,8 +6,6 @@ import android.os.Bundle;
 
 import com.uguke.java.logger.Logger;
 import com.uguke.java.logger.adapter.LogcatAdapter;
-import com.uguke.java.logger.Language;
-import com.uguke.java.logger.Level;
 import com.uguke.java.logger.Table;
 import com.uguke.java.logger.strategy.FormatStrategy;
 

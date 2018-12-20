@@ -15,74 +15,71 @@ import java.util.Map;
  * @author LeiJue
  * @date 2018/12/18
  */
-class PrinterImpl {
+class Printer {
 
-    private StringBuilder builder;
+    private StringBuilder mBuilder;
     /** 当前日志等级 **/
-    private ThreadLocal<Level> mCurrentLevel;
+    private ThreadLocal<Integer> mCurrentLevel;
     /** 当前方法数 **/
     private ThreadLocal<Integer> mCurrentCount;
     /** 当前Tag **/
     private ThreadLocal<String> mCurrentTag;
     /** 日志适配器 **/
-    private Map<Class, BaseAdapter> adapters;
+    private Map<Class, BaseAdapter> mAdapters;
 
-    private PrinterImpl() {
-        this.builder = new StringBuilder();
-        this.mCurrentTag = new ThreadLocal<>();
-        this.mCurrentLevel = new ThreadLocal<>();
-        this.mCurrentCount = new ThreadLocal<>();
-        adapters = new Hashtable<>();
+    private Printer() {
+        mBuilder = new StringBuilder();
+        mCurrentTag = new ThreadLocal<>();
+        mCurrentLevel = new ThreadLocal<>();
+        mCurrentCount = new ThreadLocal<>();
+        mAdapters = new Hashtable<>();
     }
 
-    private static class Holder {
-        static final PrinterImpl INSTANCE = new PrinterImpl();
+    static class Holder {
+        static final Printer INSTANCE = new Printer();
     }
 
-    static PrinterImpl getInstance() {
+    static Printer getInstance() {
         return Holder.INSTANCE;
     }
 
-    PrinterImpl t(String tag) {
+    Printer t(String tag) {
         mCurrentTag.remove();
         mCurrentTag.set(tag);
         return this;
     }
 
-    PrinterImpl t(int methodCount) {
+    Printer t(int methodCount) {
         mCurrentCount.remove();
         mCurrentCount.set(methodCount);
         return this;
     }
 
-    PrinterImpl t(String tag, int methodCount) {
-        mCurrentTag.set(tag);
-        mCurrentCount.set(methodCount);
-        return this;
+    Printer t(String tag, int methodCount) {
+        return t(tag).t(methodCount);
     }
 
-    private synchronized void log(Level level, Object msg, Throwable t) {
+    private synchronized void log(int level, Object msg, Throwable t) {
         // 保存当前日志等级
         mCurrentLevel.remove();
         mCurrentLevel.set(level);
-        for (Class clazz : adapters.keySet()) {
-            BaseAdapter adapter = adapters.get(clazz);
+        for (Class clazz : mAdapters.keySet()) {
+            BaseAdapter adapter = mAdapters.get(clazz);
             // 获取格式化策略
             FormatStrategy strategy = adapter.getStrategy();
-            // 获取表格样式
-            Table table = strategy.getTable();
             // 如果打印日志等级不够则不打印
-            if (Level.isLow(level, strategy.getLevel())) {
+            if (level < strategy.getLevel()) {
                 continue;
             }
+
             // 获取边框
-            String topBorder = table.getTopBorder(strategy.getMaxLength());
-            String bottomBorder = table.getBottomBorder(strategy.getMaxLength());
-            String content = getContent(msg, strategy.getLanguage());
-            String tag = createFinalTag(strategy.getTag(), mCurrentTag.get());
+            String top = Utils.getTop(strategy);
+            String bottom = Utils.getBottom(strategy);
+            String content = toContent(msg, strategy.getLang());
+            String tag = Utils.tag(strategy.getTag(), mCurrentTag.get());
 
             // 绘制上边框
-            adapter.log(level, tag, topBorder);
+            adapter.log(level, tag, top);
             // 绘制头部
             logHeader(adapter, tag);
             // 绘制内容
@@ -90,71 +87,72 @@ class PrinterImpl {
             // 绘制异常内容
             logThrowable(adapter, tag, t);
             // 绘制下边框
-            adapter.log(level, tag, bottomBorder);
+            adapter.log(level, tag, bottom);
         }
     }
 
     void addLogAdapter(BaseAdapter adapter) {
-        adapters.put(adapter.getClass(), adapter);
+        mAdapters.put(adapter.getClass(), adapter);
     }
 
     void removeLogAdapter(Class clazz) {
-        adapters.remove(clazz);
+        mAdapters.remove(clazz);
     }
 
     void removeAllLogAdapter() {
-        adapters.clear();
+        mAdapters.clear();
     }
 
     void d(String msg, Object... args) {
-        log(Level.DEBUG, Utils.format(msg, args), null);
+        log(0, Utils.format(msg, args), null);
     }
 
     void d(String msg, Throwable t, Object... args) {
-        log(Level.DEBUG, Utils.format(msg, args), t);
+        log(0, Utils.format(msg, args), t);
     }
 
     void i(String msg, Object... args) {
-        log(Level.INFO, Utils.format(msg, args), null);
+        log(1, Utils.format(msg, args), null);
     }
 
     void i(String msg, Throwable t, Object... args) {
-        log(Level.INFO, Utils.format(msg, args), t);
+        log(1, Utils.format(msg, args), t);
     }
 
     void w(String msg, Object... args) {
-        log(Level.WARN, Utils.format(msg, args), null);
+        log(2, Utils.format(msg, args), null);
     }
 
     void w(String msg, Throwable t, Object... args) {
-        log(Level.WARN, Utils.format(msg, args), t);
+        log(2, Utils.format(msg, args), t);
     }
 
     void e(String msg, Object... args) {
-        log(Level.ERROR, Utils.format(msg, args), null);
+        log(3, Utils.format(msg, args), null);
     }
 
     void e(String msg, Throwable t, Object... args) {
-        log(Level.ERROR, Utils.format(msg, args), t);
+        log(3, Utils.format(msg, args), t);
     }
 
     private void logHeader(BaseAdapter adapter, String tag) {
         // 格式化策略
         FormatStrategy strategy = adapter.getStrategy();
         // 表格样式
-        Table table = strategy.getTable();
+        int table = strategy.getTable();
+        int lang = strategy.getLang();
         // 日志等级
-        Level level = mCurrentLevel.get();
+        int level = mCurrentLevel.get();
         // 方法数
         int methodCount =  mCurrentCount.get() == null ? strategy.getMethodCount() : mCurrentCount.get();
         // 获取内容分割线
-        String divider = table.getContentDivider(strategy.getMaxLength());
+        String divider = Utils.getDivider(strategy);
         // 获取当前该线程的堆栈转储堆栈跟踪元素的数组
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         //是否显示线程信息
-        if (strategy.isShowThread()) {
-            String message = table.mBV + table.mIndent +
-                    strategy.getLanguage().mThread + Thread.currentThread().getName();
+        if (strategy.isHasThread()) {
+            String message = Constants.TABLE_SIDE[table][2] + Constants.TABLE_INDENT +
+                    Constants.LANG_THREAD[lang] + Thread.currentThread().getName();
             adapter.log(level, tag, message);
             adapter.log(level, tag, divider);
         }
@@ -163,7 +161,7 @@ class PrinterImpl {
         for (int i = strategy.getMethodOffset(); i < trace.length; i++) {
             StackTraceElement e = trace[i];
             String name = e.getClassName();
-            if (!name.equals(PrinterImpl.class.getName()) &&
+            if (!name.equals(Printer.class.getName()) &&
                     !name.equals(Logger.class.getName())) {
                 --i;
                 stackOffset = i;
@@ -183,9 +181,9 @@ class PrinterImpl {
             }
             String name = trace[stackIndex].getClassName();
             name = name.substring(name.lastIndexOf(".") + 1);
-            builder.setLength(0);
-            builder.append(table.getBV())
-                    .append(table.getIndent())
+            mBuilder.setLength(0);
+            mBuilder.append(Constants.TABLE_SIDE[table][2])
+                    .append(Constants.TABLE_INDENT)
                     .append(head)
                     .append(name)
                     .append(".")
@@ -195,8 +193,8 @@ class PrinterImpl {
                     .append(":")
                     .append(trace[stackIndex].getLineNumber())
                     .append(")");
-            head += table.getIndent();
-            adapter.log(level, tag, builder.toString());
+            head += Constants.TABLE_INDENT;
+            adapter.log(level, tag, mBuilder.toString());
         }
 
         if (methodCount > 0) {
@@ -206,28 +204,27 @@ class PrinterImpl {
 
     private void logContent(BaseAdapter adapter, String tag, String content) {
         // 将文本内容按\n分割开
-        String[] lines = content.split(System.getProperty("line.separator"));
-
+        String[] lines = content.split(Constants.ENTER);
         // 格式化策略
         FormatStrategy strategy = adapter.getStrategy();
         // 表格样式
-        Table table = strategy.getTable();
+        int table = strategy.getTable();
         // 日志等级
-        Level level = mCurrentLevel.get();
+        int level = mCurrentLevel.get();
 
         for (String line : lines) {
             // 可打印的字节长度
-            int length = (strategy.getMaxLength() - 1) * 2;
-            String newLine = table.getIndent() + line;
+            int length = strategy.getLength() * 2;
+            String newLine = line;
             // 如果不为空则循环打印
-            while (!Utils.isEmpty(newLine)) {
+            while (!Utils.empty(newLine)) {
                 // 获取可打印长度内的字符串
                 String sub = Utils.sub(newLine, length);
                 // 如果为空说明打印完成
                 if (sub == null) {
                     break;
                 }
-                adapter.log(level, tag, table.getBV() + sub);
+                adapter.log(level, tag, Constants.TABLE_SIDE[table][2] + Constants.TABLE_INDENT + sub);
                 newLine = newLine.replace(sub, "");
             }
         }
@@ -237,15 +234,14 @@ class PrinterImpl {
         if (t == null) {
             return;
         }
-
         // 格式化策略
         FormatStrategy strategy = adapter.getStrategy();
         // 表格样式
-        Table table = strategy.getTable();
+        int table = strategy.getTable();
         // 日志等级
-        Level level = mCurrentLevel.get();
+        int level = mCurrentLevel.get();
         // 获取内容分割线
-        String divider = table.getContentDivider(strategy.getMaxLength());
+        String divider = Utils.getDivider(strategy);
 
         String exception = null;
         try {
@@ -260,122 +256,101 @@ class PrinterImpl {
             e.printStackTrace();
         }
 
+        // 异常信息直接原样打印
         if (exception != null && exception.length() != 0) {
             // 将文本内容按\n分割开
-            String[] lines = exception.split(System.getProperty("line.separator"));
+            String[] lines = exception.split(Constants.ENTER);
             adapter.log(level, tag, divider);
             for (String line : lines) {
-                adapter.log(level, tag, table.getBV() + table.getIndent() + line);
+                adapter.log(level, tag, Constants.TABLE_SIDE[table][2] + Constants.TABLE_INDENT + line);
             }
         }
     }
 
-    private void getItemString(int position, Object key, Object value, Language language) {
-        builder.append(language.getPosition())
-                .append(position)
-                .append("  ")
-                .append(language.getKey())
-                .append(String.valueOf(key))
-                .append("  ")
-                .append(language.getValue())
-                .append(String.valueOf(value))
-                .append("\n");
-    }
-
-    private void getItemString(int position, Object value, Language language) {
-        builder.append(language.getPosition())
-                .append(position)
-                .append("  ")
-                .append(language.getValue())
-                .append(String.valueOf(value))
-                .append("\n");
-    }
-
-    private String getContent(Object o, Language language) {
-        if (o == null) {
+    private String toContent(Object obj, int lang) {
+        if (obj == null) {
             return "";
         }
-        builder.setLength(0);
-        Class clazz = o.getClass();
-        if (o instanceof Collection) {
-            int count = 0;
-            Collection c = (Collection) o;
-            for (Object o1 : c) {
-                getItemString(count, o1, language);
-                count ++;
+        mBuilder.setLength(0);
+        Class clazz = obj.getClass();
+        if (obj instanceof Collection) {
+            int index = 0;
+            Collection c = (Collection) obj;
+            for (Object o : c) {
+                toItem(index, null, o, lang);
+                index ++;
             }
-        } else if (o instanceof Map) {
-            int count = 0;
-            Map map = (Map) o;
+        } else if (obj instanceof Map) {
+            int index = 0;
+            Map map = (Map) obj;
             for (Object key : map.keySet()) {
-                getItemString(count, key, map.get(key), language);
-                count++;
+                toItem(index, key, map.get(key), lang);
+                index++;
             }
         } else if (clazz.isArray()) {
             if (clazz.equals(boolean [].class)) {
-                boolean [] array = (boolean []) o;
+                boolean [] array = (boolean []) obj;
                 for (int i = 0; i < array.length; i++) {
-                    getItemString(i, array[i], language);
+                    toItem(i, null, array[i], lang);
                 }
             } else if (clazz.equals(byte [].class)) {
-                byte [] array = (byte []) o;
+                byte [] array = (byte []) obj;
                 for (int i = 0; i < array.length; i++) {
-                    getItemString(i, array[i], language);
+                    toItem(i, null, array[i], lang);
                 }
             }  else if (clazz.equals(char [].class)) {
-                char [] array = (char []) o;
+                char [] array = (char []) obj;
                 for (int i = 0; i < array.length; i++) {
-                    getItemString(i, array[i], language);
+                    toItem(i, null, array[i], lang);
                 }
             } else if (clazz.equals(int [].class)) {
-                int [] array = (int []) o;
+                int [] array = (int []) obj;
                 for (int i = 0; i < array.length; i++) {
-                    getItemString(i, array[i], language);
+                    toItem(i, null, array[i], lang);
                 }
             } else if (clazz.equals(short [].class)) {
-                short [] array = (short []) o;
+                short [] array = (short []) obj;
                 for (int i = 0; i < array.length; i++) {
-                    getItemString(i, array[i], language);
+                    toItem(i, null, array[i], lang);
                 }
             } else if (clazz.equals(long [].class)) {
-                long [] array = (long []) o;
+                long [] array = (long []) obj;
                 for (int i = 0; i < array.length; i++) {
-                    getItemString(i, array[i], language);
+                    toItem(i, null, array[i], lang);
                 }
             } else if (clazz.equals(float [].class)) {
-                float [] array = (float []) o;
+                float [] array = (float []) obj;
                 for (int i = 0; i < array.length; i++) {
-                    getItemString(i, array[i], language);
+                    toItem(i, null, array[i], lang);
                 }
             } else if (clazz.equals(double [].class)) {
-                double [] array = (double []) o;
+                double [] array = (double []) obj;
                 for (int i = 0; i < array.length; i++) {
-                    getItemString(i, array[i], language);
+                    toItem(i, null, array[i], lang);
                 }
             } else {
-                Object [] array = (Object []) o;
+                Object [] array = (Object []) obj;
                 for (int i = 0; i < array.length; i++) {
-                    getItemString(i, array[i], language);
+                    toItem(i, null, array[i], lang);
                 }
             }
-        } else if (o instanceof String) {
-            builder.append(String.valueOf(o));
         } else {
-            builder.append(language.getValue())
-                    .append(String.valueOf(o))
-                    .append("\n");
+            mBuilder.append(String.valueOf(obj));
         }
-        return builder.toString();
+        return mBuilder.toString();
     }
 
-    private String createFinalTag(String globalTag, String mCurrentTag) {
-        String finalTag = "";
-        if (globalTag != null && globalTag.length() > 0) {
-            finalTag += "[" + globalTag + "]";
+    private void toItem(int index, Object key, Object value, int lang) {
+        mBuilder.append(Constants.LANG_INDEX[lang])
+                .append(index)
+                .append("  ");
+        if (key != null) {
+            mBuilder.append(Constants.LANG_KEY[lang])
+                    .append(String.valueOf(key))
+                    .append("  ");
         }
-        if (mCurrentTag != null && mCurrentTag.length() > 0) {
-            finalTag += "[" + mCurrentTag + "]";
-        }
-        return finalTag;
+        mBuilder.append(Constants.LANG_VALUE[lang])
+                .append(String.valueOf(value))
+                .append(Constants.ENTER);
     }
 }

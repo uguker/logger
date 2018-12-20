@@ -1,6 +1,5 @@
 package com.uguke.java.logger.adapter;
 
-import com.uguke.java.logger.Level;
 import com.uguke.java.logger.strategy.FormatStrategy;
 
 import java.lang.reflect.InvocationTargetException;
@@ -14,11 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LogcatAdapter extends BaseAdapter {
 
-    private final static String [] METHOD_NAMES = {"v", "d", "i", "w", "e", "wtf"};
+    private final static String [] METHOD_NAMES = {"d", "i", "w", "e"};
 
     private boolean mFailed;
     private Class mLogcatClass;
-    private Map<Level, Method> mMethodMap;
+    private Map<Integer, Method> mMethodMap;
 
     public LogcatAdapter(FormatStrategy strategy) {
         super(strategy);
@@ -32,9 +31,9 @@ public class LogcatAdapter extends BaseAdapter {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void log(Level level, String tag, String message) {
+    public void log(int level, String tag, String message) {
         // 如果日志等级为不打印，则不进行后续操作
-        if (level == Level.NONE) {
+        if (level == -1) {
             return;
         }
         // 如果没有找到Logcat类，则不进行后续操作
@@ -45,7 +44,7 @@ public class LogcatAdapter extends BaseAdapter {
         Method method = mMethodMap.get(level);
         if (method == null) {
             try {
-                method = mLogcatClass.getMethod(METHOD_NAMES[level.getCode()], String.class, String.class);
+                method = mLogcatClass.getMethod(METHOD_NAMES[level], String.class, String.class);
             } catch (NoSuchMethodException e) {
                 return;
             }

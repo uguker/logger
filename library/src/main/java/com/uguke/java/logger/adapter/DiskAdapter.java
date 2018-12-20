@@ -1,6 +1,5 @@
 package com.uguke.java.logger.adapter;
 
-import com.uguke.java.logger.Level;
 import com.uguke.java.logger.strategy.DiskStrategy;
 import com.uguke.java.logger.strategy.FormatStrategy;
 
@@ -19,7 +18,7 @@ public class DiskAdapter extends BaseAdapter {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
-    public void log(Level level, String tag, String message) {
+    public void log(int level, String tag, String message) {
         if (!(strategy instanceof DiskStrategy)) {
             return;
         }

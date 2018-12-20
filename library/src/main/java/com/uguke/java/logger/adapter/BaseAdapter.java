@@ -1,6 +1,5 @@
 package com.uguke.java.logger.adapter;
 
-import com.uguke.java.logger.Level;
 import com.uguke.java.logger.strategy.FormatStrategy;
 
 /**
@@ -29,6 +28,5 @@ public abstract class BaseAdapter {
      * @param tag   标签
      * @param msg   消息
      */
-    public abstract void log(Level level, String tag, String msg);
-
+    public abstract void log(int level, String tag, String msg);
 }
