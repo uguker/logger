@@ -4,10 +4,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 
+import com.uguke.java.logger.Level;
 import com.uguke.java.logger.Logger;
-import com.uguke.java.logger.adapter.LogcatAdapter;
-import com.uguke.java.logger.Table;
-import com.uguke.java.logger.strategy.FormatStrategy;
+import com.uguke.java.logger.LogcatAdapter;
+import com.uguke.java.logger.LoggerStrategy;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -46,14 +49,13 @@ public class MainActivity extends AppCompatActivity {
         //FormatStrategy strategy = DiskStrategy.newInstance();
 
 
-        FormatStrategy strategy = new FormatStrategy.Builder()
-                //.showThread(false)
-                .maxLength(10)
+        LoggerStrategy strategy = new LoggerStrategy.Builder()
+                .hasThread(true)
+                .length(40)
                 .methodCount(2)
                 .methodOffset(1)
-                .level(Level.VERBOSE)
-                .language(Language.CN)
-                .table(Table.DOUBLE)
+                .level(Level.D)
+                .langCn()
                 .tag("你好")
                 .build();
 
@@ -72,6 +74,16 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        }).start();
         Logger.e("你是啊你是啊你是啊你是啊");
+
+        int [] i = {100,2,3,4};
+
+        List<String> list = new ArrayList<>();
+
+        list.add("asdfasdf");
+        list.add("a");
+        list.add("asdf");
+
+        Logger.e(list);
 
 
         //Logger.e(Environment.getExternalStorageDirectory().getPath());

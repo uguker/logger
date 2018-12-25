@@ -1,12 +1,10 @@
 package com.uguke.java.logger;
 
-import com.uguke.java.logger.adapter.BaseAdapter;
-import com.uguke.java.logger.strategy.FormatStrategy;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -17,9 +15,26 @@ import java.util.Map;
  */
 class Printer {
 
+    /** 制表符四角 **/
+    static final String [] TABLE_CORNER = {"╔", "╗", "╝", "╚"};
+    /** 制表符边 **/
+    static final String [] TABLE_SIDE = {"╠", "╣", "║"};
+    /** 制表符线 **/
+    static final String TABLE_LINE = "═";
+    /** 间隔 **/
+    static final String TABLE_INDENT = "\u3000";
+
+    static final String [] LANG_TIME = {"日期：", "Time: "};
+    static final String [] LANG_THREAD = {"线程：", "Thread: "};
+    static final String [] LANG_INDEX = {"索引：", "Index: "};
+    static final String [] LANG_KEY = {"键：", "Key: "};
+    static final String [] LANG_VALUE = {"值：", "Value: "};
+    static final String [] LANG_RESULT = {"遍历结果：\n", "Traversal result:\n"};
+    static final String ENTER = System.getProperty("line.separator");
+
     private StringBuilder mBuilder;
     /** 当前日志等级 **/
-    private ThreadLocal<Integer> mCurrentLevel;
+    private ThreadLocal<Level> mCurrentLevel;
     /** 当前方法数 **/
     private ThreadLocal<Integer> mCurrentCount;
     /** 当前Tag **/
@@ -59,16 +74,16 @@ class Printer {
         return t(tag).t(methodCount);
     }
 
-    private synchronized void log(int level, Object msg, Throwable t) {
+    private synchronized void log(Level level, Object msg, Throwable t) {
         // 保存当前日志等级
         mCurrentLevel.remove();
         mCurrentLevel.set(level);
         for (Class clazz : mAdapters.keySet()) {
             BaseAdapter adapter = mAdapters.get(clazz);
             // 获取格式化策略
-            FormatStrategy strategy = adapter.getStrategy();
+            LoggerStrategy strategy = adapter.getStrategy();
             // 如果打印日志等级不够则不打印
-            if (level < strategy.getLevel()) {
+            if (level.mCode < strategy.getLevel().mCode) {
                 continue;
             }
 
@@ -103,59 +118,68 @@ class Printer {
         mAdapters.clear();
     }
 
-    void d(String msg, Object... args) {
-        log(0, Utils.format(msg, args), null);
+    void d(Object msg, Object... args) {
+        log(Level.D, Utils.format(msg, args), null);
     }
 
-    void d(String msg, Throwable t, Object... args) {
-        log(0, Utils.format(msg, args), t);
+    void d(Object msg, Throwable t, Object... args) {
+        log(Level.D, Utils.format(msg, args), t);
     }
 
-    void i(String msg, Object... args) {
-        log(1, Utils.format(msg, args), null);
+    void i(Object msg, Object... args) {
+        log(Level.I, Utils.format(msg, args), null);
     }
 
-    void i(String msg, Throwable t, Object... args) {
-        log(1, Utils.format(msg, args), t);
+    void i(Object msg, Throwable t, Object... args) {
+        log(Level.I, Utils.format(msg, args), t);
     }
 
-    void w(String msg, Object... args) {
-        log(2, Utils.format(msg, args), null);
+    void w(Object msg, Object... args) {
+        log(Level.W, Utils.format(msg, args), null);
     }
 
-    void w(String msg, Throwable t, Object... args) {
-        log(2, Utils.format(msg, args), t);
+    void w(Object msg, Throwable t, Object... args) {
+        log(Level.W, Utils.format(msg, args), t);
     }
 
-    void e(String msg, Object... args) {
-        log(3, Utils.format(msg, args), null);
+    void e(Object msg, Object... args) {
+        log(Level.E, Utils.format(msg, args), null);
     }
 
-    void e(String msg, Throwable t, Object... args) {
-        log(3, Utils.format(msg, args), t);
+    void e(Object msg, Throwable t, Object... args) {
+        log(Level.E, Utils.format(msg, args), t);
     }
 
     private void logHeader(BaseAdapter adapter, String tag) {
         // 格式化策略
-        FormatStrategy strategy = adapter.getStrategy();
-        // 表格样式
-        int table = strategy.getTable();
+        LoggerStrategy strategy = adapter.getStrategy();
         int lang = strategy.getLang();
         // 日志等级
-        int level = mCurrentLevel.get();
+        Level level = mCurrentLevel.get();
         // 方法数
         int methodCount =  mCurrentCount.get() == null ? strategy.getMethodCount() : mCurrentCount.get();
         // 获取内容分割线
         String divider = Utils.getDivider(strategy);
         // 获取当前该线程的堆栈转储堆栈跟踪元素的数组
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-        //是否显示线程信息
-        if (strategy.isHasThread()) {
-            String message = Constants.TABLE_SIDE[table][2] + Constants.TABLE_INDENT +
-                    Constants.LANG_THREAD[lang] + Thread.currentThread().getName();
-            adapter.log(level, tag, message);
+        //是否显示日期及线程信息
+        // 生成线程信息
+        String thread = TABLE_SIDE[2] + TABLE_INDENT + LANG_THREAD[lang] +
+                Thread.currentThread().getName();
+        if (adapter instanceof DiskAdapter) {
+            // 生成日期信息
+            String date = TABLE_SIDE[2] + TABLE_INDENT + LANG_TIME[lang] +
+                    strategy.getDateFormat().format(new Date());
+            adapter.log(level, tag, date);
+            if (strategy.isHasThread()) {
+                adapter.log(level, tag, thread);
+            }
+            adapter.log(level, tag, divider);
+        } else if (strategy.isHasThread()) {
+            adapter.log(level, tag, thread);
             adapter.log(level, tag, divider);
         }
+
         // 获取方法偏移数
         int stackOffset = 0;
         for (int i = strategy.getMethodOffset(); i < trace.length; i++) {
@@ -182,8 +206,8 @@ class Printer {
             String name = trace[stackIndex].getClassName();
             name = name.substring(name.lastIndexOf(".") + 1);
             mBuilder.setLength(0);
-            mBuilder.append(Constants.TABLE_SIDE[table][2])
-                    .append(Constants.TABLE_INDENT)
+            mBuilder.append(TABLE_SIDE[2])
+                    .append(TABLE_INDENT)
                     .append(head)
                     .append(name)
                     .append(".")
@@ -193,7 +217,7 @@ class Printer {
                     .append(":")
                     .append(trace[stackIndex].getLineNumber())
                     .append(")");
-            head += Constants.TABLE_INDENT;
+            head += TABLE_INDENT;
             adapter.log(level, tag, mBuilder.toString());
         }
 
@@ -204,27 +228,24 @@ class Printer {
 
     private void logContent(BaseAdapter adapter, String tag, String content) {
         // 将文本内容按\n分割开
-        String[] lines = content.split(Constants.ENTER);
+        String[] lines = content.split(ENTER);
         // 格式化策略
-        FormatStrategy strategy = adapter.getStrategy();
-        // 表格样式
-        int table = strategy.getTable();
+        LoggerStrategy strategy = adapter.getStrategy();
         // 日志等级
-        int level = mCurrentLevel.get();
-
+        Level level = mCurrentLevel.get();
         for (String line : lines) {
             // 可打印的字节长度
             int length = strategy.getLength() * 2;
             String newLine = line;
             // 如果不为空则循环打印
-            while (!Utils.empty(newLine)) {
+            while (!Utils.isEmpty(newLine)) {
                 // 获取可打印长度内的字符串
                 String sub = Utils.sub(newLine, length);
                 // 如果为空说明打印完成
                 if (sub == null) {
                     break;
                 }
-                adapter.log(level, tag, Constants.TABLE_SIDE[table][2] + Constants.TABLE_INDENT + sub);
+                adapter.log(level, tag, TABLE_SIDE[2] + TABLE_INDENT + sub);
                 newLine = newLine.replace(sub, "");
             }
         }
@@ -235,11 +256,9 @@ class Printer {
             return;
         }
         // 格式化策略
-        FormatStrategy strategy = adapter.getStrategy();
-        // 表格样式
-        int table = strategy.getTable();
+        LoggerStrategy strategy = adapter.getStrategy();
         // 日志等级
-        int level = mCurrentLevel.get();
+        Level level = mCurrentLevel.get();
         // 获取内容分割线
         String divider = Utils.getDivider(strategy);
 
@@ -259,10 +278,10 @@ class Printer {
         // 异常信息直接原样打印
         if (exception != null && exception.length() != 0) {
             // 将文本内容按\n分割开
-            String[] lines = exception.split(Constants.ENTER);
+            String[] lines = exception.split(ENTER);
             adapter.log(level, tag, divider);
             for (String line : lines) {
-                adapter.log(level, tag, Constants.TABLE_SIDE[table][2] + Constants.TABLE_INDENT + line);
+                adapter.log(level, tag, TABLE_SIDE[2] + TABLE_INDENT + line);
             }
         }
     }
@@ -276,6 +295,7 @@ class Printer {
         if (obj instanceof Collection) {
             int index = 0;
             Collection c = (Collection) obj;
+            mBuilder.append(LANG_RESULT[lang]);
             for (Object o : c) {
                 toItem(index, null, o, lang);
                 index ++;
@@ -283,11 +303,13 @@ class Printer {
         } else if (obj instanceof Map) {
             int index = 0;
             Map map = (Map) obj;
+            mBuilder.append(LANG_RESULT[lang]);
             for (Object key : map.keySet()) {
                 toItem(index, key, map.get(key), lang);
                 index++;
             }
         } else if (clazz.isArray()) {
+            mBuilder.append(LANG_RESULT[lang]);
             if (clazz.equals(boolean [].class)) {
                 boolean [] array = (boolean []) obj;
                 for (int i = 0; i < array.length; i++) {
@@ -341,16 +363,17 @@ class Printer {
     }
 
     private void toItem(int index, Object key, Object value, int lang) {
-        mBuilder.append(Constants.LANG_INDEX[lang])
+        mBuilder.append(LANG_INDEX[lang])
                 .append(index)
                 .append("  ");
         if (key != null) {
-            mBuilder.append(Constants.LANG_KEY[lang])
+            mBuilder.append(LANG_KEY[lang])
                     .append(String.valueOf(key))
                     .append("  ");
         }
-        mBuilder.append(Constants.LANG_VALUE[lang])
+        mBuilder.append(LANG_VALUE[lang])
                 .append(String.valueOf(value))
-                .append(Constants.ENTER);
+                .append(ENTER);
     }
+
 }

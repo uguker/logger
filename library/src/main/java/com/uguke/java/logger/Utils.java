@@ -1,8 +1,10 @@
 package com.uguke.java.logger;
 
-import com.uguke.java.logger.strategy.FormatStrategy;
-
 import java.util.Locale;
+
+import static com.uguke.java.logger.Printer.TABLE_CORNER;
+import static com.uguke.java.logger.Printer.TABLE_LINE;
+import static com.uguke.java.logger.Printer.TABLE_SIDE;
 
 /**
  * 功能描述：
@@ -12,9 +14,9 @@ import java.util.Locale;
  */
 class Utils {
 
-    static StringBuilder sBuilder = new StringBuilder();
 
-    static boolean empty(String text) {
+
+    static boolean isEmpty(String text) {
         return text == null || text.length() == 0;
     }
 
@@ -36,66 +38,70 @@ class Utils {
         return text.substring(0, index);
     }
 
-    static boolean isShortChar(char c) {
-        int code = (int) c;
-        return code > 32 && code < 127;
-    }
-
-    static String format(String msg, Object... args) {
-        if (args.length == 0) {
+    static Object format(Object msg, Object... args) {
+        if (args.length == 0 || !(msg instanceof CharSequence)) {
             return msg;
         }
-        return String.format(Locale.getDefault(), msg, args);
+        return String.format(Locale.getDefault(), (String) msg, args);
     }
 
     static String tag(String str1, String str2) {
         String tag = "";
-        if (!empty(str1)) {
-            tag += "[" + str1 + "]";
+        if (!isEmpty(str1)) {
+            tag += str1;
         }
-        if (!empty(str2)) {
-            tag += "[" + str2 + "]";
+        if (!isEmpty(str2)) {
+            tag += "-";
+            tag += str2;
         }
         return tag;
     }
 
-    static String getTop(FormatStrategy strategy) {
+    /**
+     * 功能描述：生成顶部
+     * @param strategy  配置策略
+     * @return 顶部字符串
+     */
+    static String getTop(LoggerStrategy strategy) {
         int len = strategy.getLength() * 2;
-        int table = strategy.getTable();
-
         StringBuilder builder = new StringBuilder();
         builder.setLength(0);
 
         for(int i = 0; i < len; i++) {
-            builder.append(Constants.TABLE_LINE[table]);
+            builder.append(TABLE_LINE);
         }
-        return Constants.TABLE_CORNER[table][0] + builder.toString() +
-                Constants.TABLE_CORNER[table][1];
+        return TABLE_CORNER[0] + builder.toString() + TABLE_CORNER[1];
     }
 
-    static String getBottom(FormatStrategy strategy) {
+    /**
+     * 功能描述：生成底部
+     * @param strategy  配置策略
+     * @return 底部字符串
+     */
+    static String getBottom(LoggerStrategy strategy) {
         int len = strategy.getLength() * 2;
-        int table = strategy.getTable();
-
         StringBuilder builder = new StringBuilder();
         builder.setLength(0);
 
         for(int i = 0; i < len; i++) {
-            builder.append(Constants.TABLE_LINE[table]);
+            builder.append(TABLE_LINE);
         }
-        return Constants.TABLE_CORNER[table][3] + builder.toString() +
-                Constants.TABLE_CORNER[table][2];
+        return TABLE_CORNER[3] + builder.toString() + TABLE_CORNER[2];
     }
 
-    static String getDivider(FormatStrategy strategy) {
+    /**
+     * 功能描述：生成分割线
+     * @param strategy  配置策略
+     * @return 分割线字符串
+     */
+    static String getDivider(LoggerStrategy strategy) {
         int len = strategy.getLength() * 2;
-        int table = strategy.getTable();
         StringBuilder builder = new StringBuilder();
         builder.setLength(0);
         for(int i = 0; i < len; i++) {
-            builder.append(Constants.TABLE_LINE[table]);
+            builder.append(TABLE_LINE);
         }
-        return Constants.TABLE_SIDE[table][0] + builder.toString() +
-                Constants.TABLE_SIDE[table][1];
+        return TABLE_SIDE[0] + builder.toString() + TABLE_SIDE[1];
     }
+
 }

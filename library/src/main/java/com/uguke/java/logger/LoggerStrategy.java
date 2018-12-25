@@ -1,6 +1,7 @@
-package com.uguke.java.logger.strategy;
+package com.uguke.java.logger;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -8,27 +9,29 @@ import java.util.Locale;
  * @author Admin
  * @date 2018/12/18
  */
-public class FormatStrategy {
+public class LoggerStrategy {
+
+    private static final int MIN_LENGTH = 30;
 
     private boolean mHasDate;
     private boolean mHasThread;
     private int mLength;
     private int mMethodCount;
     private int mMethodOffset;
-    private String mTag;
     private int mLang;
-    private int mTable;
-    private int mLevel;
+    private String mTag;
+    private String mSaveDir;
+    private String mSaveName;
+    private Level mLevel;
     private SimpleDateFormat mDateFormat;
 
-    FormatStrategy() {
+    LoggerStrategy() {
         mHasThread = true;
         mLength = 60;
         mMethodCount = 1;
         mMethodOffset = 1;
         mTag = "日志";
-        mLevel = 0;
-        mTable = 0;
+        mLevel = Level.D;
         mLang = 0;
     }
 
@@ -64,17 +67,16 @@ public class FormatStrategy {
         mLang = 1;
     }
 
-    public void setTableSingle() {
-        mTable = 1;
-    }
-
-    public void setTableDouble() {
-        mTable = 0;
-    }
-
-
-    public void setLevel(int level) {
+    public void setLevel(Level level) {
         mLevel = level;
+    }
+
+    public void setSaveDir(String saveDir) {
+        mSaveDir = saveDir;
+    }
+
+    public void setSaveName(String saveName) {
+        mSaveName = saveName;
     }
 
     public void setDateFormat(SimpleDateFormat dateFormat) {
@@ -109,38 +111,45 @@ public class FormatStrategy {
         return mLang;
     }
 
-    public int getTable() {
-        return mTable;
+    public Level getLevel() {
+        return mLevel;
     }
 
-    public int getLevel() {
-        return mLevel;
+    public String getSaveDir() {
+        return mSaveDir;
+    }
+
+    public String getSaveName() {
+        return mSaveName;
+    }
+
+    public SimpleDateFormat getDateFormat() {
+        return mDateFormat;
     }
 
     public static class Builder {
 
-        private String mTag;
-        private boolean mHasDate;
         private boolean mHasThread;
         private int mLength;
         private int mMethodCount;
         private int mMethodOffset;
         private int mLang;
-        private int mTable;
-        private int mLevel;
+        private String mTag;
+        private String mSaveDir;
+        private String mSaveName;
+        private Level mLevel;
         private SimpleDateFormat mDateFormat;
 
         public Builder() {
             mHasThread = false;
-            mHasDate = true;
             mLength = 40;
             mMethodCount = 1;
             mMethodOffset = 1;
             mTag = "日志";
-            mTable = 0;
-            mLevel = 0;
+            mLevel = Level.D;
             mLang = 0;
-            mDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            mDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault());
+            mSaveName = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()) + ".log";
         }
 
         public Builder hasThread(boolean has) {
@@ -148,13 +157,11 @@ public class FormatStrategy {
             return this;
         }
 
-        public Builder hasDate(boolean has) {
-            mHasDate = has;
-            return this;
-        }
-
         public Builder length(int length) {
             mLength = length;
+            if (mLength < MIN_LENGTH) {
+                mLength = MIN_LENGTH;
+            }
             return this;
         }
 
@@ -173,16 +180,6 @@ public class FormatStrategy {
             return this;
         }
 
-        public Builder tableDouble() {
-            mTable = 0;
-            return this;
-        }
-
-        public Builder tableSingle() {
-            mTable = 1;
-            return this;
-        }
-
         public Builder langCn() {
             mLang = 0;
             return this;
@@ -193,22 +190,37 @@ public class FormatStrategy {
             return this;
         }
 
+        public Builder level(Level level) {
+            mLevel = level;
+            return this;
+        }
+
+        public Builder saveDir(String dir) {
+            mSaveDir = dir;
+            return this;
+        }
+
+        public Builder saveName(String name) {
+            mSaveName = name;
+            return this;
+        }
+
         public Builder dateFormat(SimpleDateFormat format) {
             mDateFormat = format;
             return this;
         }
 
-        public FormatStrategy build() {
-            FormatStrategy strategy = new FormatStrategy();
+        public LoggerStrategy build() {
+            LoggerStrategy strategy = new LoggerStrategy();
             strategy.mTag = mTag;
-            strategy.mHasDate = mHasDate;
             strategy.mHasThread = mHasThread;
             strategy.mLength = mLength;
             strategy.mMethodCount = mMethodCount;
             strategy.mMethodOffset = mMethodOffset;
             strategy.mLang = mLang;
             strategy.mLevel = mLevel;
-            strategy.mTable = mTable;
+            strategy.mSaveDir = mSaveDir;
+            strategy.mSaveName = mSaveName;
             strategy.mDateFormat = mDateFormat;
             return strategy;
         }
